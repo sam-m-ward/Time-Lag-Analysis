@@ -89,6 +89,17 @@ class LCpair:
         designation is keyword for object e.g. 'F1', name is name object e.g. '3c454.3'
     """
     def time_trim(self,lc1,lc2):
+        '''
+        Time Trim
+
+        Simple Function to trim times of lc2 to fall inside range of lc2 times
+
+        Parameters
+        ----------
+        lc1,lc2: LC class objects
+            gamma-ray and radio light curves, respectively
+
+        '''
         xmin,xmax = lc1.df.x.min(),lc1.df.x.max()
 
         df2    = lc2.df
@@ -156,6 +167,13 @@ class LCpair:
         pl.show()
 
     def get_average_cadence(self):
+        '''
+        Get Average Cadence
+
+        Function identifies the light curve out of the pair that has the fewer number of data points;
+
+        Then computes the average time interval from one observation to the next
+        '''
         lc1,lc2 = self.LCpair[:]
         N1 = lc1.df.shape[0] ; N2 = lc2.df.shape[0]
         lower_sampled_lc = lc1 if N1<=N2 else lc2
@@ -163,6 +181,11 @@ class LCpair:
         self.average_cadence = average_cadence
 
     def get_nbins_for_DCCF(self):
+        '''
+        Get Nbins for DCCF
+
+        Function used to determine the lag range, the number of lag bins, and thus the time-interval in each lag bin
+        '''
         #Ensure 2/3 of LC are overlapping at any one time, as in Liodakis "Multiwavelength Cross-Correlations and Flaring Activity in Bright Blazars"
         DT = ((self.lc1.df.x.values[-1] - self.lc1.df.x.values[0])*2/3)*0.5
         taumin = -DT
@@ -175,6 +198,25 @@ class LCpair:
         self.ts_DCCF  = np.linspace(self.taumin+self.stepsize/2, self.taumax-self.stepsize/2, self.nbins)
 
     def calc_UCCF_DCCF(self):
+        '''
+        Calculate UCCF & DCCF
+
+        The main function in this class;
+
+        Firstly compute the unbinned cross correlation function;
+
+        UCCF_ij = (xi-xbar)*(yi-ybar)/(stdx*stdy)
+
+        where xbar,ybar are the sample averages of flux points in a time lag bin for lc1,lc2, respectively
+
+        & stdx,stdy are the sample standard deviations in each bin
+
+        The DCCF is computed by averaging UCCF_ij points in each bin
+
+        The time-lag is where the DCCF is largest in absolute value; |DCCF|<=1
+
+        Correlations are positive DCCF values; Anti-correlations are negative
+        '''
         lc1 = self.lc1.df ; lc2 = self.lc2.df
         N1  = lc1.shape[0]; N2  = lc2.shape[0]
 
@@ -228,6 +270,11 @@ class LCpair:
         self.BINS        = BINS
 
     def calc_DCCF_errs(self):
+        '''
+        Calculate DCCF Errors
+
+        Using simple Gaussian approximations, analytic computation of DCCF errors
+        '''
         lc1 = self.lc1.df ; lc2 = self.lc2.df
         N1  = lc1.shape[0]; N2  = lc2.shape[0]
 
@@ -264,6 +311,19 @@ class LCpair:
 
 
     def compute_DCCF(self,compute_average_cadence=True,compute_errors=True):
+        '''
+        Compute DCCF
+
+        Method that runs through individual calculations to get the DCCF
+
+        Parameters
+        ----------
+        compute_average_cadence: bool (optional; default=True)
+            set to False when using synthesised light curves
+
+        compute_errors: bool (optional; default=True)
+            set to False when using synthesised light curves
+        '''
         if compute_average_cadence:
             self.get_average_cadence()
         self.get_nbins_for_DCCF()
@@ -272,11 +332,19 @@ class LCpair:
             self.calc_DCCF_errs()
 
     def compute_confidence_intervals(self):
+        '''
+        Compute Confidence Intervals
+
+        Load up Emmanoulopoulus13 synthesised light curves;
+
+        Compute DCCF against real radio light curve
+
+        1,2,3 sigma confidence intervals computed using 10,000 synthesised LCs
+        '''
         lc2 = self.lc2
 
         #Emmanoulopoulus 2013 LCs
         newgen_LCs_E2013 = np.load(f'products/E13synthLCs/{self.name}E2013_synthLCs10k.npy')
-        #newgen_LCs_E2013 = newgen_LCs_E2013[:100]
 
         new_choices = self.choices
         new_choices['time_trim']         = False
@@ -349,16 +417,21 @@ class LCpair:
 
 
     def plot_DCCF(self):
+        '''
+        Plot DCCF
+
+        Function to plot up DCCF (and confidence intervals)
+        '''
 
         pl.figure()
-        #'''
         cs = ['blue','green','red']
-        for ic,cc in enumerate(cs):
-            upper_key = f'{ic+1}' ; lower_key = f'-{ic+1}'
-            pl.plot(self.ts_DCCF, self.confidence_curves[upper_key],c=cc,label=f'{ic+1}'+r'$\sigma$')
-            pl.plot(self.ts_DCCF, self.confidence_curves[lower_key],c=cc)
-
-        #'''
+        try:
+            for ic,cc in enumerate(cs):
+                upper_key = f'{ic+1}' ; lower_key = f'-{ic+1}'
+                pl.plot(self.ts_DCCF, self.confidence_curves[upper_key],c=cc,label=f'{ic+1}'+r'$\sigma$')
+                pl.plot(self.ts_DCCF, self.confidence_curves[lower_key],c=cc)
+        except Exception as e:
+            print (f'{e}; Need to compute confidence intervals')
         FS = self.choices['FS']
         pl.title(f"{self.name}; Radio {self.lagstr} by {abs(round(self.tlag,2))} days", fontsize=FS-3)
         pl.plot([self.tlag,self.tlag],[-1,1],c='r')
