@@ -5,4 +5,4 @@ Using DCCFs (Discrete Cross Correlation Functions), the code in this repo identi
 
 See **DCCF_Analysis.ipynb** for example use case. 
 
-See also **MastersThesis.pdf** in Analysis_Reports repo for research report.
+See also **MastersThesis.pdf** in [Analysis_Reports](https://github.com/sam-m-ward/Analysis_Reports) repo for research report.
