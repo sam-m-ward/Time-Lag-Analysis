@@ -3,4 +3,6 @@ Analysis of Gamma-ray and Radio time-series (light curves) of blazars: accreting
 
 Using DCCFs (Discrete Cross Correlation Functions), the code in this repo identifies correlations/anti-correlations, and measure time lags, between these extreme ends of the electromagnetic spectrum.
 
-See **DCCF_Analysis.ipynb** for example use case.
+See **DCCF_Analysis.ipynb** for example use case. 
+
+See also **MastersThesis.pdf** in Analysis_Reports repo for research report.
