@@ -1,0 +1,24 @@
+NAMES : {
+'F1':'3c454.3',
+'F2':'3c279',
+'F3':'PKS_1510-089',
+'F4':'PKS_1502+106',
+'F5':'CTA_102',
+'F6':'4C+38.41',
+'B1':'Mkn421',
+'B2':'S5_0716+71',
+'B3':'PKS_0426-380',
+'B4':'PKS_0537-441',
+'B5':'BLLac',
+'B6':'Mrk501'
+}
+
+#Analysis Choices
+time_trim         : True
+remove_upper_lims : True
+
+#Plotting parameters
+FS   : 18
+fac  : [1000000,1]
+cc   : ['green','red']
+lab  : ['Gamma-Rays','Radio']
